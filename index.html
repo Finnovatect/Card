@@ -494,8 +494,10 @@
                 },
                 adminEmailEncoded: "ZGFuYUBkamUuY2E=", // dana@dje.ca
                 automation: {
-                    sendBrochureToVisitor: false, // Disabled on GitHub Pages
-                    sendLeadNotificationToAdmin: false
+                    sendBrochureToVisitor: true,
+                    sendLeadNotificationToAdmin: true,
+                    includeVCardData: true,
+                    includeNotionData: true
                 }
             },
             security: {
@@ -508,8 +510,9 @@
             marketing: {
                 mailchimp: {
                     actionUrl: "YOUR_MAILCHIMP_ACTION_URL",
-                    enabled: false, // Disabled on GitHub Pages
-                    defaultOptIn: false
+                    honeypotField: "b_USERID_LISTID",
+                    enabled: true,
+                    defaultOptIn: true
                 },
                 analytics: { source: "QR Code Landing Page" }
             },
@@ -669,13 +672,21 @@
             if (formData.newsletter && 
                 CONFIG.marketing.mailchimp.enabled && 
                 CONFIG.marketing.mailchimp.actionUrl !== 'YOUR_MAILCHIMP_ACTION_URL') {
+                console.log('📬 Adding to newsletter via Mailchimp...');
                 subscribeToNewsletter(formData);
+            } else if (formData.newsletter) {
+                console.warn('📬 Mailchimp not configured. Add your action URL to config.js to enable newsletter signup.');
+                console.warn('   - Get Mailchimp action URL from: Audience > Signup forms > Embedded forms');
             }
             
             // Send emails if EmailJS is properly configured
             if (CONFIG.email.emailjs.serviceId !== 'YOUR_EMAILJS_SERVICE_ID' &&
                 CONFIG.email.automation.sendBrochureToVisitor) {
+                console.log('📧 Sending emails via EmailJS...');
                 sendDualEmails(formData);
+            } else {
+                console.warn('📧 EmailJS not configured. Add your credentials to config.js to enable email sending.');
+                console.warn('   - Get EmailJS credentials from: https://dashboard.emailjs.com/');
             }
             
             // Switch to success screen (clean version)
