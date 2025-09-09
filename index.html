@@ -594,6 +594,18 @@
                 console.warn('Configuration issues:', issues);
             }
             
+            // Initialize EmailJS with the configured public key
+            if (CONFIG.email.emailjs.publicKey !== 'YOUR_EMAILJS_PUBLIC_KEY') {
+                try {
+                    emailjs.init(CONFIG.email.emailjs.publicKey);
+                    console.log('✅ EmailJS initialized with public key');
+                } catch (error) {
+                    console.error('❌ EmailJS initialization failed:', error);
+                }
+            } else {
+                console.warn('⚠️ EmailJS not initialized: Using template public key');
+            }
+            
             return CONFIG;
         }
         
@@ -627,12 +639,7 @@
             return phoneNumber;
         }
 
-        // Initialize EmailJS with secure configuration
-        if (CONFIG && CONFIG.email.emailjs.publicKey !== 'YOUR_EMAILJS_PUBLIC_KEY') {
-            emailjs.init(CONFIG.email.emailjs.publicKey);
-        } else {
-            console.warn('EmailJS not initialized: Please configure publicKey in config.js');
-        }
+        // EmailJS initialization will be handled in initializeConfiguration()
 
         // Form submission handler
         document.getElementById('contactForm').addEventListener('submit', async function(e) {
