@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">SECURE VERSION - Financial Freedom Guide</title>
+    <title id="pageTitle">Financial Freedom Guide</title>
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
     <script id="recaptcha-script" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -474,8 +474,8 @@
         // Default configuration that works on GitHub Pages
         const DEFAULT_CONFIG = {
             personal: {
-                firstName: "Dana",
-                lastName: "Ellison"
+                firstName: "YOUR_FIRST_NAME",
+                lastName: "YOUR_LAST_NAME"
             },
             branding: {
                 pageTitle: "Financial Freedom Guide",
@@ -488,11 +488,11 @@
             },
             email: {
                 emailjs: {
-                    serviceId: "buscard_service",
-                    publicKey: "Rqgd3ar53ZPk9z4Nf",
+                    serviceId: "YOUR_EMAILJS_SERVICE_ID",
+                    publicKey: "YOUR_EMAILJS_PUBLIC_KEY",
                     templates: { visitor: "template_visitor", admin: "template_admin" }
                 },
-                adminEmailEncoded: "ZGFuYUBkamUuY2E=", // dana@dje.ca
+                adminEmailEncoded: "YOUR_BASE64_ENCODED_EMAIL", // Your email encoded
                 automation: {
                     sendBrochureToVisitor: true,
                     sendLeadNotificationToAdmin: true,
@@ -537,7 +537,7 @@
             try {
                 return atob(CONFIG.email.adminEmailEncoded);
             } catch (e) {
-                return 'dana@dje.ca';
+                return 'admin@example.com';
             }
         }
         
@@ -554,35 +554,41 @@
             const issues = [];
             if (CONFIG.email.emailjs.serviceId === 'YOUR_EMAILJS_SERVICE_ID') {
                 issues.push('EmailJS not configured - form will collect data only');
+                configurationValid = false;
+            } else {
+                configurationValid = true;
             }
             return issues;
         }
         
-        // Initialize configuration
+        // Configuration loading system
         function initializeConfiguration() {
-            // Try to load custom config if available, otherwise use defaults
-            if (typeof CARD_CONFIG !== 'undefined') {
-                CONFIG = CARD_CONFIG;
-                console.log('Using custom configuration');
+            // Try to use CARD_CONFIG from config.js if available
+            if (typeof window.CARD_CONFIG !== 'undefined' && window.CARD_CONFIG) {
+                CONFIG = window.CARD_CONFIG;
+                console.log('✅ Using credentials from config.js (local/secure mode)');
             } else {
                 CONFIG = DEFAULT_CONFIG;
-                console.log('Using default configuration for GitHub Pages');
+                console.log('⚠️  Using default template config (GitHub Pages mode)');
             }
             
+            // Set up global variables
             ADMIN_EMAIL = getAdminEmail();
             RECAPTCHA_SITE_KEY = getRecaptchaSiteKey();
             
+            // Validate and report
             const issues = validateConfig();
             if (issues.length > 0) {
                 console.warn('Configuration issues:', issues);
             }
             
-            configurationValid = true;
-            return true;
+            return CONFIG;
         }
         
-        // Initialize immediately
-        initializeConfiguration();
+        // Initialize immediately when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeConfiguration();
+        });
         
         // Version check for deployment verification
         console.log('✅ SECURE Card system loaded successfully at', new Date().toISOString());
