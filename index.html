@@ -7,7 +7,7 @@
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
     <script id="recaptcha-script" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <script src="config.js"></script>
+    <!-- config.js loaded for local development only -->
     <style>
         * {
             margin: 0;
@@ -552,9 +552,21 @@
         
         function validateConfig() {
             const issues = [];
+            
+            // Check if CONFIG exists
+            if (!CONFIG || !CONFIG.email || !CONFIG.email.emailjs) {
+                issues.push('Configuration not initialized properly');
+                configurationValid = false;
+                return issues;
+            }
+            
+            // Check EmailJS configuration
             if (CONFIG.email.emailjs.serviceId === 'YOUR_EMAILJS_SERVICE_ID') {
                 issues.push('EmailJS not configured - form will collect data only');
                 configurationValid = false;
+            } else if (CONFIG.email.emailjs.serviceId === 'buscard_service') {
+                console.log('✅ EmailJS service configured and ready');
+                configurationValid = true;
             } else {
                 configurationValid = true;
             }
