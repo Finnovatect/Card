@@ -701,7 +701,11 @@
         // Send dual emails: brochure to visitor, contact data to admin
         async function sendDualEmails(formData) {
             try {
+                console.log('📧 Starting dual email process...');
+                console.log('📧 Using EmailJS Service ID:', CONFIG.email.emailjs.serviceId);
+                
                 // Email 1: Send brochure to visitor
+                console.log('📧 Step 1: Sending brochure to visitor:', formData.email);
                 const visitorEmailParams = {
                     to_email: formData.email,
                     email: formData.email,
@@ -709,29 +713,38 @@
                     to_name: `${formData.firstName} ${formData.lastName}`,
                     name: `${formData.firstName} ${formData.lastName}`,
                     user_name: `${formData.firstName} ${formData.lastName}`,
+                    first_name: formData.firstName,
+                    last_name: formData.lastName,
                     brochure_url: CONFIG.resources.brochureUrl,
                     calendly_url: CONFIG.resources.bookingUrl,
                     subject: `Your ${CONFIG.branding.brochureTitle} is Ready!`
                 };
 
-                await emailjs.send(
+                console.log('📧 Visitor email template:', CONFIG.email.emailjs.templates.visitor);
+                console.log('📧 Visitor email params:', visitorEmailParams);
+
+                const visitorResponse = await emailjs.send(
                     CONFIG.email.emailjs.serviceId, 
                     CONFIG.email.emailjs.templates.visitor, 
                     visitorEmailParams
                 );
-                console.log('Brochure email sent successfully');
+                console.log('✅ Brochure email sent successfully!', visitorResponse);
 
                 // Email 2: Send contact data to admin
+                console.log('📧 Step 2: Sending notification to admin:', ADMIN_EMAIL);
                 const vcard = generateVCard(formData);
                 const notionData = generateNotionData(formData);
                 
                 const adminEmailParams = {
                     to_email: ADMIN_EMAIL,
-                    email: ADMIN_EMAIL,           // Try multiple parameter names  
-                    user_email: ADMIN_EMAIL,     // Common alternative
+                    email: ADMIN_EMAIL,
+                    user_email: ADMIN_EMAIL,
+                    admin_email: ADMIN_EMAIL,
                     contact_name: `${formData.firstName} ${formData.lastName}`,
+                    contact_first_name: formData.firstName,
+                    contact_last_name: formData.lastName,
                     contact_email: formData.email,
-                    contact_phone: formData.phone,
+                    contact_phone: formData.phone || 'Not provided',
                     contact_company: formData.company || 'Not provided',
                     newsletter_subscription: formData.newsletter ? 'Yes' : 'No',
                     vcard_data: vcard,
@@ -741,15 +754,29 @@
                     subject: `New Lead: ${formData.firstName} ${formData.lastName}`
                 };
 
-                await emailjs.send(
+                console.log('📧 Admin email template:', CONFIG.email.emailjs.templates.admin);
+                console.log('📧 Admin email params:', adminEmailParams);
+
+                const adminResponse = await emailjs.send(
                     CONFIG.email.emailjs.serviceId, 
                     CONFIG.email.emailjs.templates.admin, 
                     adminEmailParams
                 );
-                console.log('Admin notification email sent successfully');
+                console.log('✅ Admin notification email sent successfully!', adminResponse);
 
             } catch (error) {
-                console.error('Email sending failed:', error);
+                console.error('❌ Email sending failed:', error);
+                console.error('❌ Error details:', error.message);
+                if (error.status) {
+                    console.error('❌ EmailJS Status:', error.status);
+                }
+                if (error.text) {
+                    console.error('❌ EmailJS Response:', error.text);
+                }
+                console.warn('📧 Check your EmailJS configuration:');
+                console.warn('   - Service ID:', CONFIG.email.emailjs.serviceId);
+                console.warn('   - Template IDs:', CONFIG.email.emailjs.templates);
+                console.warn('   - Admin Email:', ADMIN_EMAIL);
                 // Continue with the process even if emails fail
             }
         }
